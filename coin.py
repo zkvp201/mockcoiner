@@ -17,6 +17,7 @@ import pandas as pd
 import operator
 import tensorflow as tf
 
+# # CSS StyleSheet
 QSS ='''
 QToolTip
 {
@@ -768,9 +769,13 @@ class TWorker(QThread):
         df['coin_5'] = ((df['TOP1'] == 'coin5') | (df['TOP2'] == 'coin5') | (df['TOP3'] == 'coin5'))
         #
         df = df.T
+        df=df[3:8]
         for i in range(5):
             a=df.iloc[i]
             noise_df.append(a)
+        df.to_excel("abcd.xlsx")
+
+
 
 class CreateDialog(QDialog):
     def __init__(self):
@@ -816,7 +821,7 @@ class CreateDialog(QDialog):
             )
             return conn
 
-        conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
+        conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
         curs = conn.cursor(pymysql.cursors.DictCursor)
 
         input_email = self.id
@@ -938,7 +943,8 @@ class BacktestingWindow(QDialog):
         df = ror.realtime_noise_ror(tickers[0])
         ax = self.fig.add_subplot(311)
         ax.set_title('Coin Price', size=10)
-        ax.plot(df['close'])
+        ax.plot(df['close'],label=tickers[0])
+        ax.legend()
 
         ax = self.fig.add_subplot(313)
         ax.plot(df['cumprod2'], 'r')
@@ -1077,8 +1083,7 @@ class MyWindow(QMainWindow, form_class):
 
     def updateCoin(self):
 
-        conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com', port=3306, user='mockcoiner_dba',
-                               password='sinbu753951!', db='mockcoiner_db', charset='utf8')
+        conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
         curs = conn.cursor()
 
         sql_open = "SELECT * FROM mockcoiner_db.user WHERE email = '" + str(_id_) + "'"
@@ -1118,7 +1123,7 @@ class MyWindow(QMainWindow, form_class):
 
     def resetcoin(self):
 
-        conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
+        conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
         curs = conn.cursor()
 
         sql_open = "SELECT * FROM mockcoiner_db.user WHERE email = '"+str(_id_)+"'"
@@ -1182,7 +1187,7 @@ class MyWindow(QMainWindow, form_class):
 
                 ###mysql 데이터 로드 시작
 
-                conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
+                conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
                 curs = conn.cursor()
 
                 sql_open = "SELECT * FROM mockcoiner_db.user WHERE email = '"+str(_id_)+"'"
@@ -1214,9 +1219,10 @@ class MyWindow(QMainWindow, form_class):
 
                 # 현재 시장 매수,매도상황
                 for i in range(5):
-                    orderbook = pybithumb.get_orderbook(tickers[i])
-                    asks = orderbook['asks']
-                    a = asks[0]['price']
+                    #orderbook = pybithumb.get_orderbook(tickers[i])
+                    #asks = orderbook['asks']
+                    #a = asks[0]['price']
+                    a = pybithumb.get_current_price(tickers[i])
                     sell_price.append(a)
                     print(sell_price[i], "sell_price")
 
@@ -1226,11 +1232,12 @@ class MyWindow(QMainWindow, form_class):
                             target[i]) + "\n이동평균선 : " + str(ma5[i]) + "\n")
 
 
+                    print( noise_df[i][0])
 
                     # 매수 조건 활성화
-                    if price[i] > target[i] and price[i] > ma5[i] and noise_df[i].bool()==True:  # 목표가격 및 이동 평균선 수치보다 높다면
+                    if price[i] > target[i] and price[i] > ma5[i] and noise_df[i][0]==True:  # 목표가격 및 이동 평균선 수치보다 높다면
                         print(i+1, "번째 코인 매수신호발생!", price[i], target[i])
-                        self.textEdit.append("===%s 번째 코인 %s 매수신호발생!===\n 현재가격: %s 목표가격: %s" % (i,rows[0][i+10],price[i],target[i]) )
+                        self.textEdit.append("===%s 번째 코인 %s 매수신호발생!===\n 현재가격: %s 목표가격: %s" % (i+1,rows[0][i+10],price[i],target[i]) )
 
                         ##### 거래 코인 갯수 및 잔고 계산
                         # unit_coin = 돈 -> 코인 개수로 환산
@@ -1292,7 +1299,7 @@ class MyWindow(QMainWindow, form_class):
     def try_sell(self):  # 여기에 팔 코인 이름과 유저 정보를 받아 오는 식으로 수정해야 한다.
         try:
             ## mysql 연결
-            conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
+            conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
             curs = conn.cursor()
             sql_open = "SELECT * FROM mockcoiner_db.user WHERE email = '"+str(_id_)+"'"  # 이부분을 임의로 받아와야 함
             curs.execute(sql_open)
@@ -1350,7 +1357,7 @@ class MyWindow(QMainWindow, form_class):
         _id_ = id
         password = dlg.password
         ########sql session
-        conn = pymysql.connect(host='db-2pm0u.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
+        conn = pymysql.connect(host='db-2um5m.pub-cdb.ntruss.com',port=3306 ,user='mockcoiner_dba',password='sinbu753951!',db='mockcoiner_db',charset='utf8')
         curs = conn.cursor()
 
         sql_open = "SELECT * FROM mockcoiner_db.user WHERE email = '"+str(id)+"'"

@@ -262,3 +262,4 @@ def Top3_dist_ror(ticker_list):
     return df1
 
 
+Top3_dist_ror(ticker_list)
